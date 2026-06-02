@@ -23,7 +23,7 @@ CARPETA_EVIDENCIAS = "evidencias"
 if not os.path.exists(CARPETA_EVIDENCIAS):
     os.makedirs(CARPETA_EVIDENCIAS)
 
-ctk.set_appearance_mode("Dark")
+ctk.set_appearance_mode("Light")
 ctk.set_default_color_theme("blue")
 
 FASES_AUDITORIA = [
@@ -67,6 +67,21 @@ TRADUCCION = {
     'glove':  'Guantes',
     'glass':  'Lentes',
     'boots':  'Botas'
+}
+
+# --- PALETA DE COLORES (TEMA CLARO) ---
+ESTILOS = {
+    "fondo_principal": "#f8f9fa",
+    "fondo_panel": "#ffffff",
+    "texto_titulos": "#212529",
+    "texto_normal": "#495057",
+    "texto_secundario": "#6c757d",
+    
+    # Colores de Estado (Formato: [Color claro, Color en hover/borde])
+    "color_estado_identificando": ["#0d6efd", "#0b5ed7"], # Azul
+    "color_estado_escaneando":    ["#ffc107", "#ffca2c"], # Amarillo/Naranja
+    "color_estado_denegado":      ["#dc3545", "#b02a37"], # Rojo
+    "color_estado_autorizado":    ["#198754", "#146c43"], # Verde
 }
 
 def emitir_sonido_async(tipo):
@@ -119,19 +134,21 @@ class SALVIDashboard(ctk.CTk):
         self.start_scan_requested = False
 
         # Layout principal
+        self.configure(fg_color=ESTILOS["fondo_principal"])
         self.grid_columnconfigure(1, weight=1)
         self.grid_columnconfigure(2, weight=1)
         self.grid_rowconfigure(0, weight=1)
 
         # Panel izquierdo
-        self.panel_info = ctk.CTkFrame(self, width=280, corner_radius=0)
+        self.panel_info = ctk.CTkFrame(self, width=280, corner_radius=0, fg_color=ESTILOS["fondo_panel"])
         self.panel_info.grid(row=0, column=0, sticky="nsew")
         self.panel_info.grid_rowconfigure(10, weight=1)
 
         ctk.CTkLabel(
             self.panel_info,
             text="Auditoría Secuencial",
-            font=ctk.CTkFont(size=30, weight="bold")
+            font=ctk.CTkFont(size=30, weight="bold"),
+            text_color=ESTILOS["texto_titulos"]
         ).grid(row=0, column=0, padx=20, pady=(20, 5))
 
         # Etiqueta del trabajador identificado
@@ -139,7 +156,7 @@ class SALVIDashboard(ctk.CTk):
             self.panel_info,
             text="SIN IDENTIFICAR",
             font=ctk.CTkFont(size=13),
-            text_color="#888888"
+            text_color=ESTILOS["texto_secundario"]
         )
         self.label_trabajador.grid(row=1, column=0, padx=20, pady=(5, 0))
 
@@ -148,6 +165,7 @@ class SALVIDashboard(ctk.CTk):
             text="IDENTIFICANDO",
             corner_radius=5,
             fg_color=self.color_estado,
+            text_color="white", # El texto sobre el color siempre será blanco
             font=ctk.CTkFont(size=18, weight="bold"),
             width=240,
             height=50
@@ -158,7 +176,9 @@ class SALVIDashboard(ctk.CTk):
             self.panel_info,
             width=240,
             height=240,
-            font=ctk.CTkFont(size=13)
+            font=ctk.CTkFont(size=13),
+            fg_color=ESTILOS["fondo_principal"],
+            text_color=ESTILOS["texto_normal"]
         )
         self.text_detalles.grid(row=4, column=0, padx=20, pady=10)
         self.text_detalles.configure(state="disabled")
@@ -166,34 +186,36 @@ class SALVIDashboard(ctk.CTk):
         ctk.CTkLabel(
             self.panel_info,
             text="S INICIAR  |  R REINTENTAR  |  Q SALIR",
-            justify="center"
+            justify="center",
+            text_color=ESTILOS["texto_secundario"]
         ).grid(row=9, column=0, padx=20, pady=20)
 
         # Panel central — cámara en vivo
-        self.panel_video = ctk.CTkFrame(self, corner_radius=10)
+        self.panel_video = ctk.CTkFrame(self, corner_radius=10, fg_color=ESTILOS["fondo_panel"])
         self.panel_video.grid(row=0, column=1, padx=10, pady=20, sticky="nsew")
         ctk.CTkLabel(
             self.panel_video,
             text="CÁMARA EN VIVO",
-            font=ctk.CTkFont(weight="bold")
+            font=ctk.CTkFont(weight="bold"),
+            text_color=ESTILOS["texto_titulos"]
         ).pack(pady=10)
         self.label_video = ctk.CTkLabel(self.panel_video, text="")
         self.label_video.pack(expand=True, fill="both", padx=10, pady=10)
 
         # Panel derecho — evidencia
-        self.panel_evidencia = ctk.CTkFrame(self, corner_radius=10, fg_color="#1e1e1e")
+        self.panel_evidencia = ctk.CTkFrame(self, corner_radius=10, fg_color=ESTILOS["fondo_panel"]) # <--- AQUÍ LE QUITAMOS EL GRIS OSCURO
         self.panel_evidencia.grid(row=0, column=2, padx=10, pady=20, sticky="nsew")
         ctk.CTkLabel(
             self.panel_evidencia,
             text="EVIDENCIA",
             font=ctk.CTkFont(weight="bold"),
-            text_color="#ff4444"
+            text_color="#dc3545" # Rojo brillante
         ).pack(pady=10)
         self.label_evidencia = ctk.CTkLabel(
             self.panel_evidencia,
             text="SIN INFRACCIONES REGISTRADAS",
             font=ctk.CTkFont(size=16),
-            text_color="#555555"
+            text_color=ESTILOS["texto_secundario"]
         )
         self.label_evidencia.pack(expand=True, fill="both", padx=10, pady=10)
 
@@ -203,7 +225,7 @@ class SALVIDashboard(ctk.CTk):
         self.bind('<KeyPress-r>', self.reintentar_identificacion)
 
         # Placeholder de evidencia
-        img_vacia = Image.new('RGB', (480, 360), color=(30, 30, 30))
+        img_vacia = Image.new('RGB', (480, 360), color=(240, 240, 240)) # <--- GRIS CLARO PARA EL FONDO
         self.img_tk_vacia = ctk.CTkImage(
             light_image=img_vacia,
             dark_image=img_vacia,
