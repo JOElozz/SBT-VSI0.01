@@ -1,9 +1,9 @@
-# Bases de datos locales (¡Lo más importante para que no subas datos de prueba!)
+# Bases de datos locales
 *.db
 *.sqlite
 argos_auditoria.db
 
-# Carpetas de compilación de Scala/sbt y Play Framework
+# Carpetas de compilacion de Scala/sbt y Play Framework
 logs/
 target/
 project/target/
@@ -21,7 +21,7 @@ project/project/target/
 /.project/
 /.settings/
 
-# Archivos de caché y configuración temporal
+# Archivos de cache y configuración temporal
 .cache/
 .history/
 *.log
