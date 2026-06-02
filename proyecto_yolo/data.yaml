@@ -1,0 +1,13 @@
+  train: /train/images
+  val: /valid/images
+  test: /test/images
+
+  nc: 15
+  names: ['Boots', 'Ear-Protection', 'Glass', 'Glove', 'Helmet', 'Mask', 'No-Boots', 'No-Ear-Protection', 'No-Glass', 'No-Glove', 'No-Helmet', 'No-Mask', 'No-Vest', 'Person', 'Vest']
+
+  roboflow:
+    workspace: iaovejas
+    project: safetyap
+    version: 4
+    license: CC BY 4.0
+    url: https://universe.roboflow.com/iaovejas/safetyap/dataset/4

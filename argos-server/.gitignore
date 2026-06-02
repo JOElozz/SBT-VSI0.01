@@ -1,0 +1,27 @@
+# Bases de datos locales (¡Lo más importante para que no subas datos de prueba!)
+*.db
+*.sqlite
+argos_auditoria.db
+
+# Carpetas de compilación de Scala/sbt y Play Framework
+logs/
+target/
+project/target/
+project/project/target/
+/RUNNING_PID
+
+# Archivos de IDEs (VS Code, IntelliJ, Eclipse)
+.metals/
+.bloop/
+.vscode/
+/.bsp/
+/.idea/
+/.idea_modules/
+/.classpath/
+/.project/
+/.settings/
+
+# Archivos de caché y configuración temporal
+.cache/
+.history/
+*.log
