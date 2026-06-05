@@ -14,9 +14,9 @@ from vision_core import AnalizadorVision
 from evaluador_prolog import EvaluadorProlog
 from identificador import IdentificadorTrabajador
 
-RUTA_MODELO   = r"C:\proyecto_yolo\runs\detect\train5\weights\best.pt"
-RUTA_REGLAS   = r"C:\proyecto_yolo\reglas.pl"
-CARPETA_FOTOS = r"C:\proyecto_yolo\fotos_trabajadores"
+RUTA_MODELO   = r"runs\detect\train5\weights\best.pt"
+RUTA_REGLAS   = r"reglas.pl"
+CARPETA_FOTOS = r"fotos_trabajadores"
 TIEMPO_COOLDOWN = 6
 
 CARPETA_EVIDENCIAS = "evidencias"
