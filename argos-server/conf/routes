@@ -1,11 +1,8 @@
 # Routes
-# This file defines all application routes (Higher priority routes first)
-# https://www.playframework.com/documentation/latest/ScalaRouting
-# ~~~~
-
-# An example controller showing a sample home page
 GET     /                           controllers.HomeController.index()
-
-POST  /auditoria           controllers.HomeController.recibirAuditoria()
-GET   /historial           controllers.HomeController.historial()
-GET   /assets/*file          controllers.Assets.versioned(path="/public", file: Asset)
+POST    /auditoria                  controllers.HomeController.recibirAuditoria()
+POST    /trabajadores               controllers.HomeController.crearTrabajador()
+GET     /trabajadores               controllers.HomeController.trabajadores()
+GET     /historial                  controllers.HomeController.historial()
+GET     /historial/hoy              controllers.HomeController.historialHoy()
+GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

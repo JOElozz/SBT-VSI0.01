@@ -98,16 +98,16 @@ def emitir_sonido_async(tipo):
             winsound.Beep(1000, 100)
     threading.Thread(target=reproducir, daemon=True).start()
 
-def enviar_a_scala(resultado, fase, faltante="", trabajador="DESCONOCIDO"):
-    """Envía el resultado de la auditoría al servidor Scala."""
+def enviar_a_scala(resultado, fase, faltante="", trabajador_id="DESCONOCIDO"):
+    """Envía el resultado de la auditoría al servidor Scala usando un identificador seguro."""
     try:
         ts = datetime.datetime.now().strftime("%Y%m%d_%H%M%S")
         requests.post("http://localhost:9000/auditoria", json={
-            "timestamp":  ts,
-            "resultado":  resultado,
-            "fase":       fase,
-            "faltante":   faltante,
-            "trabajador": trabajador
+            "timestamp":     ts,
+            "resultado":     resultado,
+            "fase":          fase,
+            "faltante":      faltante,
+            "trabajador_id": trabajador_id
         }, timeout=2)
     except Exception:
         pass

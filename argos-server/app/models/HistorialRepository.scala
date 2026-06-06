@@ -37,7 +37,7 @@ class HistorialRepository @Inject()(dbConfigProvider: DatabaseConfigProvider)(im
   }
 
   // Guardar un nuevo registro
-  def crear(registro: Historial): Future[Long] = db.run {
-    (historial returning historial.map(_.id)) += registro
+  def crear(registro: Historial): Future[Int] = db.run {
+    historial += registro
   }
 }
