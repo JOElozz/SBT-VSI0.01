@@ -223,6 +223,7 @@ class SALVIDashboard(ctk.CTk):
         self.bind('<KeyPress-s>', self.solicitar_escaneo)
         self.bind('<KeyPress-q>', self.on_closing)
         self.bind('<KeyPress-r>', self.reintentar_identificacion)
+        self.bind('<F5>',         self.recargar_trabajadores)
 
         # Placeholder de evidencia
         img_vacia = Image.new('RGB', (480, 360), color=(240, 240, 240)) # <--- GRIS CLARO PARA EL FONDO
@@ -408,11 +409,26 @@ class SALVIDashboard(ctk.CTk):
             "Mire a la cámara\nsin casco ni lentes."
         )
 
+    
+
     def actualizar_texto(self, texto):
         self.text_detalles.configure(state="normal")
         self.text_detalles.delete("1.0", tk.END)
         self.text_detalles.insert("1.0", texto)
         self.text_detalles.configure(state="disabled")
+
+    def recargar_trabajadores(self, event=None):
+        if self.estado == "IDENTIFICANDO":
+            self.actualizar_texto("Recargando trabajadores...\nEspera un momento.")
+            threading.Thread(target=self._recargar_async, daemon=True).start()
+
+    def _recargar_async(self):
+        self.identificador.recargar()
+        total = len(self.identificador.conocidos_aliases)
+        self.after(0, lambda: self.actualizar_texto(
+            f"✅ {total} trabajador(es) cargado(s).\n\n"
+            f"Mire a la cámara\nsin casco ni lentes\npara ser reconocido."
+        ))
 
     def on_closing(self, event=None):
         self.vision.liberar_camara()

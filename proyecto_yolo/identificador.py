@@ -4,9 +4,16 @@ import os
 
 class IdentificadorTrabajador:
     def __init__(self, carpeta_base="fotos_trabajadores"):
+        self.carpeta_base = carpeta_base
         self.conocidos_encodings = []
         self.conocidos_aliases = []
         self._cargar_rostros(carpeta_base)
+
+    def recargar(self):
+        self.conocidos_encodings = []
+        self.conocidos_aliases   = []
+        self._cargar_rostros(self.carpeta_base)
+        print(f"[IDENTIFICADOR] Recargado: {len(self.conocidos_aliases)} trabajadores en memoria.")
 
     def _cargar_rostros(self, carpeta_base):
         if not os.path.exists(carpeta_base):
