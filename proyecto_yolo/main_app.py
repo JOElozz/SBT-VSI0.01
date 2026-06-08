@@ -8,6 +8,7 @@ import winsound
 import os
 import datetime
 import requests
+import serial
 
 # Importar componentes de visión, evaluación e identificación 
 from vision_core import AnalizadorVision
@@ -18,6 +19,13 @@ RUTA_MODELO   = r"runs\detect\train5\weights\best.pt"
 RUTA_REGLAS   = r"reglas.pl"
 CARPETA_FOTOS = r"fotos_trabajadores"
 TIEMPO_COOLDOWN = 6
+# comunicacion con arduino para paro seguro
+try:
+    arduino = serial.Serial('COM3', 9600, timeout=0.1)
+except Exception as e:
+    print(f"No se pudo conectar con Arduino: {e}")
+    arduino = None
+
 
 CARPETA_EVIDENCIAS = "evidencias"
 if not os.path.exists(CARPETA_EVIDENCIAS):
@@ -246,7 +254,32 @@ class SALVIDashboard(ctk.CTk):
         exito, frame, objetos_detectados_ahora = self.vision.procesar_frame(clases_buscadas)
 
         if exito:
+            # NUEVO BLOQUE: ORQUESTADOR DE SEGURIDAD (PIR + PROLOG)
+            mensaje_arduino = "DESPEJADO"
 
+            #LEER EL DATO DEL HARDWARE (PIR)
+            if arduino is not None and arduino.in_waiting > 0:
+                mensaje_arduino = arduino.readline().decode('utf-8').strip()
+            # RESOLUCION SLD (PROLOG) PARA EL PARO SEGURO
+            permiso_operar_pir = self.prolog.evaluar_paro_seguro(mensaje_arduino)
+            # LOGICA DE ACTUACION:
+            #LA MAQUINA SOLO ARRANCARA SI EL PIR ESTA LIBRE (Prolog = True )
+            #Y EL TRABAJADOR PASO LA AUDITORIA (self.estado = " AUTORIZADO")
+            if permiso_operar_pir and self.estado == "AUTORIZADO":
+                if arduino: arduino.write(b'1') #Arrancar maquina
+                alerta_texto = "ZONA SEGURA: MAQUINA OPERATIVA"
+                color_alerta = (0, 255, 0) #verde RGB
+            else:
+                if arduino: arduino.write(b'0')# paro inmediato
+                alerta_texto = "¡MAQUINA BLOQUEADA / PARO ACTIVADO!"
+                color_alerta = (0, 0, 255) #rojo RGB
+            #SI EL ESTADO ES AUTORIZADO, PERO EL PIR DETECTA ALGO, ES UNA INTRUSION
+            if self.estado == "AUTORIZADO" and not permiso_operar_pir:
+                alerta_texto = "¡INTRUSION! PARO DE EMERGENCIA"
+            #DIBUJAR ALERTA DIRECTAMENTE EN EL VIDEO
+            cv2.rectangle(frame, (10, 10), (500, 40), (0, 0, 0), -1 )
+            cv2.putText(frame, alerta_texto, (20, 32), cv2.FONT_HERSHEY_SIMPLEX, 0.7, color_alerta, 2)
+            
             # ── IDENTIFICANDO ──────────────────────────────────────────────
             if self.estado == "IDENTIFICANDO":
                 self.color_estado = ("#3B8ED0", "#1F6AA5")
@@ -419,7 +452,9 @@ class SALVIDashboard(ctk.CTk):
         self.destroy()
 
 
-if __name__ == "__main__":
+if __name__ == "__main__":  
     app = SALVIDashboard()
     app.protocol("WM_DELETE_WINDOW", app.on_closing)
     app.mainloop()
+
+

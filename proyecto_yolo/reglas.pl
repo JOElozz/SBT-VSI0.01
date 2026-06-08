@@ -11,3 +11,12 @@ fase_aprobada(Zona, Detectados) :-
 
 member_check(Lista, Elemento) :-
     member(Elemento, Lista).
+
+%  el hecho dinamico que llegara desde el microcontrolador
+:- dynamic estado_pir/1.
+
+% clausula de horn para la zona segura
+zona_segura :- estado_pir(despejado).
+
+% clausula principal de resolucion 
+operar_maquina :- zona_segura.

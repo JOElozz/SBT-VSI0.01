@@ -38,3 +38,18 @@ class EvaluadorProlog:
             requeridos = resultados[0]["Requeridos"]
             return [r for r in requeridos if r not in detectados]
         return []
+
+# fase para paro seguro
+    def evaluar_paro_seguro(self, lectura_arduino):
+        #limpiar el estado anterior en prolog usando el motor de consultas 
+        list(self.prolog.query("retractall(estado_pir(_))"))
+
+        #insertar el nuevo hecho basado en el hardware
+        if lectura_arduino == "DESPEJADO":
+            list(self.prolog.query("assertz(estado_pir(despejado))"))
+        else:
+            list(self.prolog.query("assertz(estado_pir(movimiento))"))
+        # resolucion SLD: preguntar si es seguro operar 
+        resultado = list(self.prolog.query("operar_maquina"))
+        
+        return bool(resultado)
