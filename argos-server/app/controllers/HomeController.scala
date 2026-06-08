@@ -11,26 +11,30 @@ import java.time.format.DateTimeFormatter
 @Singleton
 class HomeController @Inject()(
   val controllerComponents: ControllerComponents,
-  repo: HistorialRepository,
-  trabRepo: TrabajadorRepository
+  repo:       HistorialRepository,
+  trabRepo:   TrabajadorRepository,
+  authAction: AuthAction            // ← inyectamos el filtro
 )(implicit ec: ExecutionContext) extends BaseController {
 
-  implicit val historialFormat: OFormat[Historial] = Json.format[Historial]
+  implicit val historialFormat:  OFormat[Historial]  = Json.format[Historial]
   implicit val trabajadorFormat: OFormat[Trabajador] = Json.format[Trabajador]
 
-  // GET / — página principal
-  def index() = Action { implicit request: Request[AnyContent] =>
+  // ── GET / — dashboard (protegido) ─────────────────────────────────────────
+  def index() = authAction { implicit request =>
+    // request.alias  → alias del supervisor logueado
+    // request.rol    → "supervisor" | "admin"
+    // request.nombre → nombre completo
     Ok(views.html.index())
   }
 
-  // POST /auditoria — recibe datos de la cámara Python
+  // ── POST /auditoria — API Python (NO protegido, viene de red local) ────────
   def recibirAuditoria() = Action.async(parse.json) { implicit request =>
-    val body       = request.body
-    val timestamp  = (body \ "timestamp").as[String]
-    val resultado  = (body \ "resultado").as[String]
-    val fase       = (body \ "fase").as[String]
+    val body        = request.body
+    val timestamp   = (body \ "timestamp").as[String]
+    val resultado   = (body \ "resultado").as[String]
+    val fase        = (body \ "fase").as[String]
     val faltanteStr = (body \ "faltante").asOpt[String].filter(_.nonEmpty)
-    val trabajador = (body \ "trabajador_id").asOpt[String]
+    val trabajador  = (body \ "trabajador_id").asOpt[String]
       .orElse((body \ "trabajador").asOpt[String])
       .getOrElse("DESCONOCIDO")
 
@@ -40,7 +44,7 @@ class HomeController @Inject()(
     }
   }
 
-  // POST /trabajadores
+  // ── POST /trabajadores — API Python (NO protegido) ─────────────────────────
   def crearTrabajador() = Action.async(parse.json) { implicit request =>
     val body       = request.body
     val alias      = (body \ "alias").asOpt[String].filter(_.nonEmpty)
@@ -58,37 +62,35 @@ class HomeController @Inject()(
     }
   }
 
-  // GET /trabajadores
-  def trabajadores() = Action.async {
+  // ── GET /trabajadores — protegido ──────────────────────────────────────────
+  def trabajadores() = authAction.async { implicit request =>
     trabRepo.listarTodo().map(r => Ok(Json.toJson(r)))
   }
 
-  // Convierte un registro a JSON
-  private def registroAJson(r: Historial): JsObject = {
-    val faltante: String = r.faltante.getOrElse("-")
-    Json.obj(
-      "timestamp"  -> r.timestamp,
-      "resultado"  -> r.resultado,
-      "fase"       -> r.fase,
-      "faltante"   -> faltante,
-      "trabajador" -> r.trabajador
-    )
-  }
-
-  // GET /historial — devuelve TODOS los registros (histórico completo)
-  def historial() = Action.async {
+  // ── GET /historial — protegido ─────────────────────────────────────────────
+  def historial() = authAction.async { implicit request =>
     repo.listarTodo().map { registros =>
       Ok(Json.toJson(registros.map(registroAJson)))
     }
   }
 
-  // GET /historial/hoy — devuelve solo los registros de HOY
-  // El timestamp tiene formato YYYYMMDD_HHMMSS, tomamos los primeros 8 caracteres
-  def historialHoy() = Action.async {
+  // ── GET /historial/hoy — protegido ────────────────────────────────────────
+  def historialHoy() = authAction.async { implicit request =>
     val hoy = LocalDate.now().format(DateTimeFormatter.ofPattern("yyyyMMdd"))
     repo.listarTodo().map { registros =>
       val deHoy = registros.filter(r => r.timestamp.startsWith(hoy))
       Ok(Json.toJson(deHoy.map(registroAJson)))
     }
+  }
+
+  // ── Utilidad ───────────────────────────────────────────────────────────────
+  private def registroAJson(r: Historial): JsObject = {
+    Json.obj(
+      "timestamp"  -> r.timestamp,
+      "resultado"  -> r.resultado,
+      "fase"       -> r.fase,
+      "faltante"   -> r.faltante.getOrElse("-").asInstanceOf[String],
+      "trabajador" -> r.trabajador
+    )
   }
 }

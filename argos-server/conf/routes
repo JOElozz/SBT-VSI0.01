@@ -1,8 +1,18 @@
 # Routes
+# ── Autenticación ─────────────────────────────────────────────────────────────
+GET     /login                      controllers.AuthController.loginPage()
+POST    /login                      controllers.AuthController.loginSubmit()
+GET     /logout                     controllers.AuthController.logout()
+
+# ── Dashboard (protegido — requiere sesión) ───────────────────────────────────
 GET     /                           controllers.HomeController.index()
-POST    /auditoria                  controllers.HomeController.recibirAuditoria()
-POST    /trabajadores               controllers.HomeController.crearTrabajador()
-GET     /trabajadores               controllers.HomeController.trabajadores()
 GET     /historial                  controllers.HomeController.historial()
 GET     /historial/hoy              controllers.HomeController.historialHoy()
+GET     /trabajadores               controllers.HomeController.trabajadores()
+
+# ── API cliente Python (NO protegido — viene de red local) ────────────────────
+POST    /auditoria                  controllers.HomeController.recibirAuditoria()
+POST    /trabajadores               controllers.HomeController.crearTrabajador()
+
+# ── Assets ────────────────────────────────────────────────────────────────────
 GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)

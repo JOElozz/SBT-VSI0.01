@@ -15,3 +15,4 @@ libraryDependencies ++= Seq(
   
   "org.xerial"        % "sqlite-jdbc"            % "3.43.0.0"
 ) 
+libraryDependencies += "at.favre.lib" % "bcrypt" % "0.10.2"
